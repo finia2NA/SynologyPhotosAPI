@@ -9,7 +9,7 @@ List all items in all folders in `Personal Space`.
 | Parameter | Description | Value | Default Value |
 | --- | --- | --- | --- |
 | offset | Required. Specify how many shared folders are skipped before beginning to return listed shared folders. | Integer | 0 |
-| limit | Required. Number of items requested. 0 lists all items. `limit=5000` worked on an album with 987 items, which returned all of them. The response has no `total`: an empty `list` past the end is the end-of-data signal. | Integer | 0 |
+| limit | Required. Number of items requested. 0 lists all items. Values of several thousand, such as 5000, are accepted. The response has no `total`: an empty `list` past the end is the end-of-data signal. | Integer | 0 |
 | folder_id | Optional. ID of folder | Integer | |
 | album_id | Optional. ID of an album. Lists the items of that album. Combines with `offset`, `limit`, `sort_by`, `start_time`, `end_time` and `favorite_only`. | Integer | |
 | start_time, end_time | Optional. Only items taken inside this range, encoded like `time` (see the response) | Integer | |
@@ -46,10 +46,10 @@ https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=7&
 | orientation_original | Integer | Orientation value of the file. It appears to differ from `orientation` once a photo was rotated in Photos |
 | resolution | object with keys `height` and `width` as Integer | Height and width in display orientation: a portrait photo with `orientation` 6 reports the portrait size. Do not apply `orientation` to it again |
 | thumbnail | object with keys `unit_id`, `cache_key`, `preview`, `sm`, `m`, `xl` | Returns available thumbnail data of photo. `unit_id` is the ID used for thumbnails and downloads and can differ from the item `id` |
-| video_convert | Array of objects with key `quality` | Playable renditions the NAS offers. We saw `high`, `orig_h264` and `medium`. An empty array means no conversion is available |
+| video_convert | Array of objects with key `quality` | Playable renditions the NAS offers. Values include `high`, `orig_h264` and `medium`. An empty array means no conversion is available |
 | video_meta | object with key `duration` (and others) | `duration` is in milliseconds |
 | provider_user_id | | ??? | 
-| exif | Returns keys as `aperture`, `camera`, `exposure_time"`, `focal_length`, `iso`, `lens`. | Exif data. All values are strings meant for display, for example `"F2.8"`, `"1/25 s"`, `"9.0 mm"` and `"1250"` in one sample; parse defensively. Items without EXIF (for example screenshots and videos) return empty strings instead of omitting the keys | 
+| exif | Returns keys as `aperture`, `camera`, `exposure_time"`, `focal_length`, `iso`, `lens`. | Exif data. All values are strings meant for display, for example `"F2.8"`, `"1/25 s"`, `"9.0 mm"` and `"1250"`. Their exact format is not fixed, so parse them defensively. Items without EXIF (for example screenshots and videos) return empty strings instead of omitting the keys | 
 | tag | Returns object(s) with keys `id` and `name` | | 
 | description | String | Exif description | 
 | gps | Returns object with keys `latitude` and `longitude`. | GPS coordinates | 
@@ -60,10 +60,10 @@ https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=7&
 | favorite | Boolean | `true` for favorited items; the key is absent otherwise |
 
 ### Notes
-- **`time` is capture-local wall-clock time.** The integer encodes the date and clock time the photo shows as if it were UTC, without a timezone. Decode it with a GMT calendar to get the time shown in the photo; converting it to the viewer's timezone shifts it.
-- **Use `additional.thumbnail.unit_id`, not `id`, for `Thumbnail` and `Download`.** In one capture of 1,055 items, `unit_id` differed from `id` for 739 of them.
+- **`time` is the photo's local wall-clock time.** The integer encodes the date and clock time the photo shows as if it were UTC, without a timezone. Decode it with a GMT calendar to get the time shown in the photo; converting it to the viewer's timezone shifts it.
+- **Use `additional.thumbnail.unit_id`, not `id`, for `Thumbnail` and `Download`.** `unit_id` often differs from `id`.
 - **`SYNO.Foto.Browse.Timeline` ignores `album_id`.** It returns no error and describes the whole library.
-- **`method=get` takes an `id` array** (`id=[12]`, even for one item) and returns items in request order, repeating duplicated IDs. IDs that do not exist or were deleted are omitted without an error or marker. 100, 500 and 1000 IDs per request worked.
+- **`method=get` takes an `id` array** (`id=[12]`, even for one item) and returns items in request order, repeating duplicated IDs. IDs that do not exist or were deleted are omitted without an error or marker. At least 1000 IDs per request are accepted.
 - **Keys that do not apply are omitted** from `additional` (`gps` for an unlocated photo, `favorite` for an unfavorited one).
 
 ### Example:

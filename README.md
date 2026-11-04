@@ -75,7 +75,7 @@ Response should be:
 }
 ```
 
-With `SYNO.API.Auth` version 6, `session=webui` (the value the Photos 1.9.1 web client sends) logged in a non-admin account that got error 402 for `session=SynologyPhotos`. One account was tested.
+With `SYNO.API.Auth` version 6, `session=webui` (the value the Photos web client sends) logs in. `session=SynologyPhotos` can be rejected with error 402; this appears to affect non-admin accounts.
 
 About authenticaton also see [DSM Login Web API Guide](https://global.download.synology.com/download/Document/Software/DeveloperGuide/Os/DSM/All/enu/DSM_Login_Web_API_Guide_enu.pdf).
 
@@ -305,9 +305,9 @@ Following call will get the image into your browser:
 https://<IP_ADDRESS>/photo/mo/sharing/webapi/entry.cgi?api=SYNO.FotoTeam.Thumbnail&method=get&version=1&id=40808&cache_key=40808_1633659236&type=unit&size=sm
 ```
 
-`id` is the item's `additional.thumbnail.unit_id`, used together with the matching `cache_key`. It is not always the item's `id`: in one capture of 1,055 items the two differed for 739 of them.
+`id` is the item's `additional.thumbnail.unit_id`, used together with the matching `cache_key`. It is often different from the item's `id`.
 
-The Photos 1.9.1 web client requests thumbnails from this path instead (Shared Space: `/t/` instead of `/p/`; string values are JSON-encoded, including the quotes):
+The Photos web client requests thumbnails from this path (Shared Space: `/t/` instead of `/p/`; string values are JSON-encoded, including the quotes):
 ```
 https://<IP_ADDRESS>/synofoto/api/v2/p/Thumbnail/get?id=<unit_id>&cache_key="<cache_key>"&type="unit"&size="sm"&SynoToken=<token>
 ```
@@ -441,7 +441,7 @@ The response might look as follows:
 }
 ```
 ### Shared albums as a signed-in recipient
-The steps above are for anonymous visitors. A user who is logged in and was granted access to someone else's album (Photos 1.9.1) does not use `SYNO.Core.Sharing.Login`, `sharing_sid` or the `x-syno-sharing` header. They use the normal `/photo/webapi/entry.cgi` session and pass the album's sharing reference as `passphrase="<reference>"` (JSON-encoded) to `SYNO.Foto.Browse.Album` `get`, `SYNO.Foto.Browse.Item` `list` and the thumbnail request. `SYNO.Foto.Browse.Album` `get` with the numeric album ID returns nothing for another user's album; only the reference selects it. `SYNO.Foto.Sharing.Misc` `list_shared_with_me_album` lists the albums shared with the user.
+The steps above are for anonymous visitors. A user who is logged in and was granted access to someone else's album does not use `SYNO.Core.Sharing.Login`, `sharing_sid` or the `x-syno-sharing` header. They use the normal `/photo/webapi/entry.cgi` session and pass the album's sharing reference as `passphrase="<reference>"` (JSON-encoded) to `SYNO.Foto.Browse.Album` `get`, `SYNO.Foto.Browse.Item` `list` and the thumbnail request. `SYNO.Foto.Browse.Album` `get` with the numeric album ID returns nothing for another user's album; only the reference selects it. `SYNO.Foto.Sharing.Misc` `list_shared_with_me_album` lists the albums shared with the user.
 
 ### Get thumbnail for each item
 Now you can get the thumbnail of each image:

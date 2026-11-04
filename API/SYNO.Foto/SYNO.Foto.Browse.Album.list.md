@@ -11,7 +11,7 @@ List all albums.
 | offset | Required. Specify how many shared folders are skipped before beginning to return listed shared folders. | Integer | 0 |
 | limit | Required. Number of shared folders requested. 0 lists all shared folders. | Integer | 0 |
 | category | Which albums to list. `"normal"` lists normal albums. | String | |
-| sort_by | Optional. Field to sort on. The Photos web client sends `"album_name"`. | String | |
+| sort_by | Optional. Field to sort on. `"album_name"` sorts by album name. | String | |
 | sort_direction | Optional. Specify to sort ascending or to sort descending. <br/>Options include: <br/><b>asc:</b> sort ascending. <br/><b>desc:</b> sort descending. | asc or desc | asc |
 | additional | Optional. `["sharing_info","thumbnail"]` adds the sharing state and the album cover. `thumbnail` has the same shape as for items (`unit_id`, `cache_key`, `sm`, `m`, `xl`). | JSON array of strings | |
 
@@ -19,7 +19,7 @@ List all albums.
 ```
 https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Album&version=4&method=list&offset=0&limit=100&category="normal"&sort_by="album_name"&sort_direction="asc"&additional=["sharing_info","thumbnail"]
 ```
-String values are JSON-encoded, including the quotes. This is the request the Photos 1.9.1 web client sends.
+String values are JSON-encoded, including the quotes.
 
 Sharing an album does not change its `id`, `type` (`normal`) or owner, and it stays in this list; only `shared` changes.
 
