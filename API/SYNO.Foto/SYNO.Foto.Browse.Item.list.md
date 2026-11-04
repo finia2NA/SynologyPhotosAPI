@@ -9,8 +9,10 @@ List all items in all folders in `Personal Space`.
 | Parameter | Description | Value | Default Value |
 | --- | --- | --- | --- |
 | offset | Required. Specify how many shared folders are skipped before beginning to return listed shared folders. | Integer | 0 |
-| limit | Required. Number of shared folders requested. 0 lists all shared folders. | Integer | 0 |
+| limit | Required. Number of items requested. 0 lists all items. Values of several thousand, such as 5000, are accepted. The response has no `total`: an empty `list` past the end is the end-of-data signal. | Integer | 0 |
 | folder_id | Optional. ID of folder | Integer | |
+| album_id | Optional. ID of an album. Lists the items of that album. Combines with `offset`, `limit`, `sort_by`, `start_time`, `end_time` and `favorite_only`. | Integer | |
+| start_time, end_time | Optional. Only items taken inside this range, encoded like `time` (see the response) | Integer | |
 | sort_by | Optional.<br/>Only working, when `folder_id` is given.<br/>Specify which file information to sort on. <br/>Options:<br/>**filename**: file name<br/>**filesize**: file size<br/>**takentime**: time of taking image<br/>**item_type**: type of the item | filename, filesize, takentime, item_type | filename |
 | sort_direction | Optional.<br/>Only working, when `folder_id` is given.<br/>Specify to sort ascending or to sort descending.<br/>Options include: <br/>**asc**: sort ascending. <br/>**desc**: sort descending. | asc or desc | desc |
 | type | Type of data<br/>**photo**: Photo<br/>**video**: Video<br/>**live**: iPhone live photos | String |
@@ -19,7 +21,7 @@ List all items in all folders in `Personal Space`.
 
 ### Example:
 ```
-https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=1&method=list&offset=0&limit=100&folder_id=1989&additional=["thumbnail","resolution","orientation","video_convert","video_meta","provider_user_id","exif","tag","description","gps","geocoding_id","address","person"]
+https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=7&method=list&offset=0&limit=100&folder_id=1989&additional=["thumbnail","resolution","orientation","video_convert","video_meta","provider_user_id","exif","tag","description","gps","geocoding_id","address","person"]
 ```
 
 ### Response:
@@ -34,26 +36,35 @@ https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=1&
 | indexed_time | Linux timestamp in second | Timestamp of indexing the file |
 | live_type | String | i.e.: photo (in case of iPhone live photos) |
 | owner_user_id | Integer | UID of owner |
-| time | Linux timestamp in second | Timestamp of file creation |
+| time | Linux timestamp in second | Time the photo was taken. Not an absolute instant, see the notes below the `<additional>` table |
 | type | String | Type of data<br/><b>photo:</b> Photo<br/><b>video:</b> Video<br/><b>live:</b> iPhone live photos |
 
 `<additional>` object definitions:
 | Parameter | Type | Description |
 | --- | --- | --- |
-| orientation | Integer | ??? |
-| orientation_original | Integer | ??? |
-| resolution | object with keys `height` and `width` as Integer | Height and width of original photo |
-| thumbnail | object with keys `cache_key`, `preview`, `sm`, `m`, `xl` | Returns available thumbnail data of photo |
-| video_convert | | ??? | 
-| video_meta | | ??? | 
+| orientation | Integer | EXIF orientation value |
+| orientation_original | Integer | Orientation value of the file. It appears to differ from `orientation` once a photo was rotated in Photos |
+| resolution | object with keys `height` and `width` as Integer | Height and width in display orientation: a portrait photo with `orientation` 6 reports the portrait size. Do not apply `orientation` to it again |
+| thumbnail | object with keys `unit_id`, `cache_key`, `preview`, `sm`, `m`, `xl` | Returns available thumbnail data of photo. `unit_id` is the ID used for thumbnails and downloads and can differ from the item `id` |
+| video_convert | Array of objects with key `quality` | Playable renditions the NAS offers. Values include `high`, `orig_h264` and `medium`. An empty array means no conversion is available |
+| video_meta | object with key `duration` (and others) | `duration` is in milliseconds |
 | provider_user_id | | ??? | 
-| exif | Returns keys as `aperture`, `camera`, `exposure_time"`, `focal_length`, `iso`, `lens`. | Exif data | 
+| exif | Returns keys as `aperture`, `camera`, `exposure_time"`, `focal_length`, `iso`, `lens`. | Exif data. All values are strings meant for display, for example `"F2.8"`, `"1/25 s"`, `"9.0 mm"` and `"1250"`. Their exact format is not fixed, so parse them defensively. Items without EXIF (for example screenshots and videos) return empty strings instead of omitting the keys | 
 | tag | Returns object(s) with keys `id` and `name` | | 
 | description | String | Exif description | 
 | gps | Returns object with keys `latitude` and `longitude`. | GPS coordinates | 
 | geocoding_id | Integer | For internal database ??? | 
 | address | Returns object with keys `city`, `city_id`, `country`, `country_id`, `county`, `county_id`, `district`, `district_id`, `landmark`, `landmark_id`, `route`, `route_id`, `state`, `state_id`, `town`, `town_id`, `village`, `village_id | Address calculated from gps coordinates. | 
 | person | Returns person object(s) | Information about tagged person(s). | 
+| folder | String | Full slash-prefixed folder path of the item (Personal Space). Also accepted by `get` |
+| favorite | Boolean | `true` for favorited items; the key is absent otherwise |
+
+### Notes
+- **`time` is the photo's local wall-clock time.** The integer encodes the date and clock time the photo shows as if it were UTC, without a timezone. Decode it with a GMT calendar to get the time shown in the photo; converting it to the viewer's timezone shifts it.
+- **Use `additional.thumbnail.unit_id`, not `id`, for `Thumbnail` and `Download`.** `unit_id` often differs from `id`.
+- **`SYNO.Foto.Browse.Timeline` ignores `album_id`.** It returns no error and describes the whole library.
+- **`method=get` takes an `id` array** (`id=[12]`, even for one item) and returns items in request order, repeating duplicated IDs. IDs that do not exist or were deleted are omitted without an error or marker. At least 1000 IDs per request are accepted.
+- **Keys that do not apply are omitted** from `additional` (`gps` for an unlocated photo, `favorite` for an unfavorited one).
 
 ### Example:
 ```YAML
