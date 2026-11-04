@@ -13,10 +13,32 @@ List all albums.
 | sort_by | Optional. Specify which file information to sort on. <br>Options include: <br/><b>name:</b> file name. <br/><b>size:</b> file size. <br/><b>user:</b> file owner. <br/><b>group:</b> file group. <br/><b>mtime:</b> last modified time. <br/><b>atime:</b> last access time. <br/><b>ctime:</b> last change time. <br/><b>crtime:</b> create time. <br/><b>posix:</b> POSIX permission. <br/><b>type:</b> file extension. | name, size, user, group, mtime, atime, ctime, crtime, posix or type | name |
 | sort_direction | Optional. Specify to sort ascending or to sort descending. <br/>Options include: <br/><b>asc:</b> sort ascending. <br/><b>desc:</b> sort descending. | asc or desc | asc |
 
+The `sort_by` options above look copied from the File Station documentation and do not describe albums. See the notes below for what the Photos web client sends.
+
 ### Example:
 ```
 https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Album&version=1&method=list&offset=0&limit=100
 ```
+
+### Notes from Synology Photos 1.9.1 (version 4)
+The Photos web client lists albums with version 4 and these form fields (strings are JSON-encoded, including the quotes):
+
+```
+api=SYNO.Foto.Browse.Album
+version=4
+method=list
+offset=0
+limit=100
+category="normal"
+sort_by="album_name"
+sort_direction="asc"
+additional=["sharing_info","thumbnail"]
+```
+
+- `category="normal"` returns normal albums. The record keys listed above are present, plus `additional.thumbnail` (same `unit_id`, `cache_key`, `sm`, `m`, `xl` shape as item thumbnails) and `additional.sharing_info`.
+- `sort_by="album_name"` is what the web client sends.
+- Sharing an album does not change its `id`, `type` (`normal`) or owner, and it stays in this list. Only the `shared` attribute changes.
+- `SYNO.Foto.Browse.Item` `list` with `album_id=<id>` lists the items of an album. `SYNO.Foto.Browse.Timeline` does not filter by `album_id`.
 
 ### Response:
 `<data>` object definitions:

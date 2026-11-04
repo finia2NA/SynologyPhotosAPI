@@ -75,6 +75,8 @@ Response should be:
 }
 ```
 
+Note: with `SYNO.API.Auth` version 6, a non-admin test account got error 402 for `session=SynologyPhotos` and was logged in with `session=webui`, which is also what the Photos web client sends (Photos 1.9.1). This was observed with a single account, so the cause is not established.
+
 About authenticaton also see [DSM Login Web API Guide](https://global.download.synology.com/download/Document/Software/DeveloperGuide/Os/DSM/All/enu/DSM_Login_Web_API_Guide_enu.pdf).
 
 ### Synology Photos API
@@ -303,6 +305,13 @@ Following call will get the image into your browser:
 https://<IP_ADDRESS>/photo/mo/sharing/webapi/entry.cgi?api=SYNO.FotoTeam.Thumbnail&method=get&version=1&id=40808&cache_key=40808_1633659236&type=unit&size=sm
 ```
 
+Note: `id` here is the item's `additional.thumbnail.unit_id`, which happens to equal the item `id` in these examples. In general the two differ (in one capture of 1,055 items, for 739 of them), so use `unit_id` together with the matching `cache_key`.
+
+The Photos 1.9.1 web client no longer calls `entry.cgi` for thumbnails. It uses (Shared Space: `/t/` instead of `/p/`; string values are JSON-encoded, including the quotes):
+```
+https://<IP_ADDRESS>/synofoto/api/v2/p/Thumbnail/get?id=<unit_id>&cache_key="<cache_key>"&type="unit"&size="sm"&SynoToken=<token>
+```
+
 ## Access to Shared Albums
 To access shared albums was a problem, I'm quite struggling with.
 I want to access the thumbnails of photos in a shared album for loading them into my own web application.
@@ -431,6 +440,9 @@ The response might look as follows:
    "success":true
 }
 ```
+### Shared albums as a signed-in recipient
+The steps above are for anonymous visitors. A user who is logged in and was granted access to someone else's album (Photos 1.9.1) does not use `SYNO.Core.Sharing.Login`, `sharing_sid` or the `x-syno-sharing` header. They use the normal `/photo/webapi/entry.cgi` session and pass the album's sharing reference as `passphrase="<reference>"` (JSON-encoded) to `SYNO.Foto.Browse.Album` `get`, `SYNO.Foto.Browse.Item` `list` and the thumbnail request. `SYNO.Foto.Browse.Album` `get` with the numeric album ID returns nothing for another user's album; only the reference selects it. `SYNO.Foto.Sharing.Misc` `list_shared_with_me_album` lists the albums shared with the user.
+
 ### Get thumbnail for each item
 Now you can get the thumbnail of each image:
 ```

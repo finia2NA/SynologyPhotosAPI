@@ -14,6 +14,8 @@ List all folders in `Personal Space`.
 | sort_by | Optional. Specify which file information to sort on. <br>Options include: <br/><b>name:</b> file name. <br/><b>size:</b> file size. <br/><b>user:</b> file owner. <br/><b>group:</b> file group. <br/><b>mtime:</b> last modified time. <br/><b>atime:</b> last access time. <br/><b>ctime:</b> last change time. <br/><b>crtime:</b> create time. <br/><b>posix:</b> POSIX permission. <br/><b>type:</b> file extension. | name, size, user, group, mtime, atime, ctime, crtime, posix or type | name |
 | sort_direction | Optional. Specify to sort ascending or to sort descending. <br/>Options include: <br/><b>asc:</b> sort ascending. <br/><b>desc:</b> sort descending. | asc or desc | asc |
 
+The `sort_by` options above look copied from the File Station documentation. In Synology Photos 1.9.1, version 2 of this method accepts `sort_by="filename"` (JSON-encoded string, with `sort_direction="asc"`) and `additional=["thumbnail"]` alongside `id`, `offset` and `limit`.
+
 ### Example:
 ```
 https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Folder&version=1&method=list&offset=0&limit=100
