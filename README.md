@@ -75,7 +75,7 @@ Response should be:
 }
 ```
 
-Note: with `SYNO.API.Auth` version 6, a non-admin test account got error 402 for `session=SynologyPhotos` and was logged in with `session=webui`, which is also what the Photos web client sends (Photos 1.9.1). This was observed with a single account, so the cause is not established.
+With `SYNO.API.Auth` version 6, `session=webui` (the value the Photos 1.9.1 web client sends) logged in a non-admin account that got error 402 for `session=SynologyPhotos`. One account was tested.
 
 About authenticaton also see [DSM Login Web API Guide](https://global.download.synology.com/download/Document/Software/DeveloperGuide/Os/DSM/All/enu/DSM_Login_Web_API_Guide_enu.pdf).
 
@@ -305,9 +305,9 @@ Following call will get the image into your browser:
 https://<IP_ADDRESS>/photo/mo/sharing/webapi/entry.cgi?api=SYNO.FotoTeam.Thumbnail&method=get&version=1&id=40808&cache_key=40808_1633659236&type=unit&size=sm
 ```
 
-Note: `id` here is the item's `additional.thumbnail.unit_id`, which happens to equal the item `id` in these examples. In general the two differ (in one capture of 1,055 items, for 739 of them), so use `unit_id` together with the matching `cache_key`.
+`id` is the item's `additional.thumbnail.unit_id`, used together with the matching `cache_key`. It is not always the item's `id`: in one capture of 1,055 items the two differed for 739 of them.
 
-The Photos 1.9.1 web client no longer calls `entry.cgi` for thumbnails. It uses (Shared Space: `/t/` instead of `/p/`; string values are JSON-encoded, including the quotes):
+The Photos 1.9.1 web client requests thumbnails from this path instead (Shared Space: `/t/` instead of `/p/`; string values are JSON-encoded, including the quotes):
 ```
 https://<IP_ADDRESS>/synofoto/api/v2/p/Thumbnail/get?id=<unit_id>&cache_key="<cache_key>"&type="unit"&size="sm"&SynoToken=<token>
 ```

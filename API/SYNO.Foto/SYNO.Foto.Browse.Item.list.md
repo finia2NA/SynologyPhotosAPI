@@ -9,8 +9,10 @@ List all items in all folders in `Personal Space`.
 | Parameter | Description | Value | Default Value |
 | --- | --- | --- | --- |
 | offset | Required. Specify how many shared folders are skipped before beginning to return listed shared folders. | Integer | 0 |
-| limit | Required. Number of shared folders requested. 0 lists all shared folders. | Integer | 0 |
+| limit | Required. Number of items requested. 0 lists all items. `limit=5000` worked on an album with 987 items, which returned all of them. The response has no `total`: an empty `list` past the end is the end-of-data signal. | Integer | 0 |
 | folder_id | Optional. ID of folder | Integer | |
+| album_id | Optional. ID of an album. Lists the items of that album. Combines with `offset`, `limit`, `sort_by`, `start_time`, `end_time` and `favorite_only`. | Integer | |
+| start_time, end_time | Optional. Only items taken inside this range, encoded like `time` (see the response) | Integer | |
 | sort_by | Optional.<br/>Only working, when `folder_id` is given.<br/>Specify which file information to sort on. <br/>Options:<br/>**filename**: file name<br/>**filesize**: file size<br/>**takentime**: time of taking image<br/>**item_type**: type of the item | filename, filesize, takentime, item_type | filename |
 | sort_direction | Optional.<br/>Only working, when `folder_id` is given.<br/>Specify to sort ascending or to sort descending.<br/>Options include: <br/>**asc**: sort ascending. <br/>**desc**: sort descending. | asc or desc | desc |
 | type | Type of data<br/>**photo**: Photo<br/>**video**: Video<br/>**live**: iPhone live photos | String |
@@ -19,7 +21,7 @@ List all items in all folders in `Personal Space`.
 
 ### Example:
 ```
-https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=1&method=list&offset=0&limit=100&folder_id=1989&additional=["thumbnail","resolution","orientation","video_convert","video_meta","provider_user_id","exif","tag","description","gps","geocoding_id","address","person"]
+https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=7&method=list&offset=0&limit=100&folder_id=1989&additional=["thumbnail","resolution","orientation","video_convert","video_meta","provider_user_id","exif","tag","description","gps","geocoding_id","address","person"]
 ```
 
 ### Response:
@@ -57,15 +59,12 @@ https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Item&version=1&
 | folder | String | Full slash-prefixed folder path of the item (Personal Space). Also accepted by `get` |
 | favorite | Boolean | `true` for favorited items; the key is absent otherwise |
 
-### Notes from Synology Photos 1.9.1 (`SYNO.Foto.Browse.Item` version 7)
-The examples above use version 1. The following was observed with version 7 as sent by the Photos web client.
-
-- **`time` is capture-local wall-clock time.** The integer encodes the date and clock time the photo shows, as if it were UTC, without a timezone. Decode it with a GMT calendar to get the time shown in the photo. Converting it to the viewer's timezone shifts the photo. `start_time` and `end_time` use the same encoding, and the timeline day boundaries are GMT days.
+### Notes
+- **`time` is capture-local wall-clock time.** The integer encodes the date and clock time the photo shows as if it were UTC, without a timezone. Decode it with a GMT calendar to get the time shown in the photo; converting it to the viewer's timezone shifts it.
 - **Use `additional.thumbnail.unit_id`, not `id`, for `Thumbnail` and `Download`.** In one capture of 1,055 items, `unit_id` differed from `id` for 739 of them.
-- **`album_id` (integer) lists the items of one of your own albums.** It combines with `offset`, `limit`, `sort_by`, `start_time`/`end_time` and `favorite_only`. `SYNO.Foto.Browse.Timeline` `get` accepts `album_id` without an error but ignores it and describes the whole library.
-- **There is no `total`.** An empty `list` past the end is the end-of-data signal. `limit=1000` and `limit=5000` both worked on an album with 987 items.
-- **`method=get` takes an `id` array** (`id=[12]`, even for one item) and returns items in request order, repeating duplicated IDs. IDs that do not exist, or were deleted, are silently omitted without an error or marker. 100, 500 and 1000 IDs per request worked.
-- **`additional` is optional per item.** Keys that do not apply (`gps` for an unlocated photo, `favorite` for an unfavorited one) are omitted.
+- **`SYNO.Foto.Browse.Timeline` ignores `album_id`.** It returns no error and describes the whole library.
+- **`method=get` takes an `id` array** (`id=[12]`, even for one item) and returns items in request order, repeating duplicated IDs. IDs that do not exist or were deleted are omitted without an error or marker. 100, 500 and 1000 IDs per request worked.
+- **Keys that do not apply are omitted** from `additional` (`gps` for an unlocated photo, `favorite` for an unfavorited one).
 
 ### Example:
 ```YAML

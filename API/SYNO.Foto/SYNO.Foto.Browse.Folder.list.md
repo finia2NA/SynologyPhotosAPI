@@ -11,14 +11,13 @@ List all folders in `Personal Space`.
 | offset | Required. Specify how many shared folders are skipped before beginning to return listed shared folders. | Integer |  |
 | limit | Required. Number of shared folders requested. Value has to be higher than 0 otherwise nothing will displayed. | Integer |  |
 | id | ID of parent directory | Integer |  |
-| sort_by | Optional. Specify which file information to sort on. <br>Options include: <br/><b>name:</b> file name. <br/><b>size:</b> file size. <br/><b>user:</b> file owner. <br/><b>group:</b> file group. <br/><b>mtime:</b> last modified time. <br/><b>atime:</b> last access time. <br/><b>ctime:</b> last change time. <br/><b>crtime:</b> create time. <br/><b>posix:</b> POSIX permission. <br/><b>type:</b> file extension. | name, size, user, group, mtime, atime, ctime, crtime, posix or type | name |
+| sort_by | Optional. Field to sort on. Version 2 accepts `"filename"`. | String | |
 | sort_direction | Optional. Specify to sort ascending or to sort descending. <br/>Options include: <br/><b>asc:</b> sort ascending. <br/><b>desc:</b> sort descending. | asc or desc | asc |
-
-The `sort_by` options above look copied from the File Station documentation. In Synology Photos 1.9.1, version 2 of this method accepts `sort_by="filename"` (JSON-encoded string, with `sort_direction="asc"`) and `additional=["thumbnail"]` alongside `id`, `offset` and `limit`.
+| additional | Optional. `["thumbnail"]` adds the folder cover thumbnail. | JSON array of strings | |
 
 ### Example:
 ```
-https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Folder&version=1&method=list&offset=0&limit=100
+https://<IP_ADDRESS>/photo/webapi/entry.cgi?api=SYNO.Foto.Browse.Folder&version=2&method=list&id=<PARENT_ID>&offset=0&limit=100&sort_by="filename"&sort_direction="asc"&additional=["thumbnail"]
 ```
 
 ### Response:
